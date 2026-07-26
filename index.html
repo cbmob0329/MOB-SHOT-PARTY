@@ -1,1 +1,2386 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
 
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
+  />
+
+  <meta
+    name="description"
+    content="縦スクロールシューティングゲーム MOB SHOT"
+  />
+
+  <meta name="theme-color" content="#080b12" />
+
+  <title>MOB SHOT</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <noscript class="noscript-message">
+    MOB SHOTをプレイするにはJavaScriptを有効にしてください。
+  </noscript>
+
+  <!-- =========================================================
+       ローディング画面
+  ========================================================== -->
+  <section
+    id="loadingScreen"
+    class="loading-screen is-active"
+    aria-label="ゲームを読み込んでいます"
+  >
+    <div class="loading-background" aria-hidden="true"></div>
+
+    <div class="loading-content">
+      <div class="loading-logo-wrap">
+        <img
+          class="loading-logo"
+          src="mt/menutitle.png"
+          alt="MOB SHOT"
+          draggable="false"
+        />
+      </div>
+
+      <p
+        id="loadingMemo"
+        class="loading-memo"
+        aria-live="polite"
+      >
+        敵の数値をゼロにすると撃破できます。
+      </p>
+
+      <div
+        class="loading-progress"
+        role="progressbar"
+        aria-label="読み込み進捗"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+      >
+        <div class="loading-progress-track">
+          <div
+            id="loadingProgressFill"
+            class="loading-progress-fill"
+          ></div>
+        </div>
+
+        <div class="loading-progress-text">
+          <span id="loadingProgressValue">0</span>
+          <span>%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       アプリ本体
+  ========================================================== -->
+  <main
+    id="app"
+    class="app"
+    aria-live="polite"
+    hidden
+  >
+    <!-- =======================================================
+         共通上部ステータス
+    ======================================================== -->
+    <header
+      id="globalHeader"
+      class="global-header"
+      hidden
+    >
+      <div class="global-resource-list">
+        <div
+          class="resource-item resource-rank"
+          aria-label="現在のランク"
+        >
+          <span class="resource-icon resource-icon-rank">R</span>
+          <span
+            id="headerRankValue"
+            class="resource-value"
+          >
+            1
+          </span>
+        </div>
+
+        <div
+          class="resource-item resource-coin"
+          aria-label="所持コイン"
+        >
+          <span class="resource-icon resource-icon-coin">C</span>
+          <span
+            id="headerCoinValue"
+            class="resource-value"
+          >
+            0
+          </span>
+        </div>
+
+        <div
+          class="resource-item resource-diamond"
+          aria-label="所持ダイヤ"
+        >
+          <span class="resource-icon resource-icon-diamond">D</span>
+          <span
+            id="headerDiamondValue"
+            class="resource-value"
+          >
+            0
+          </span>
+        </div>
+
+        <div
+          class="resource-item resource-ruby"
+          aria-label="所持ルビー"
+        >
+          <span class="resource-icon resource-icon-ruby">R</span>
+          <span
+            id="headerRubyValue"
+            class="resource-value"
+          >
+            0
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <!-- =======================================================
+         共通戻るボタン
+    ======================================================== -->
+    <button
+      id="globalBackButton"
+      class="global-back-button"
+      type="button"
+      data-action="back"
+      aria-label="前の画面へ戻る"
+      hidden
+    >
+      <span aria-hidden="true">←</span>
+      <span>BACK</span>
+    </button>
+
+    <!-- =======================================================
+         メイン画面
+    ======================================================== -->
+    <section
+      id="mainScreen"
+      class="screen main-screen"
+      data-screen="main"
+      aria-labelledby="mainScreenTitle"
+    >
+      <div class="main-background" aria-hidden="true"></div>
+
+      <h1
+        id="mainScreenTitle"
+        class="visually-hidden"
+      >
+        MOB SHOT メインメニュー
+      </h1>
+
+      <div class="main-title-wrap">
+        <img
+          class="main-title-image"
+          src="mt/menutitle.png"
+          alt="MOB SHOT"
+          draggable="false"
+        />
+      </div>
+
+      <button
+        id="mainNoticeButton"
+        class="main-notice-button"
+        type="button"
+        data-action="open-notice"
+        aria-label="お知らせを開く"
+      >
+        <span class="main-notice-icon" aria-hidden="true">!</span>
+
+        <span class="main-notice-content">
+          <strong id="mainNoticeTitle">
+            MOB SHOT
+          </strong>
+
+          <span id="mainNoticeText">
+            新しい冒険へ出発しよう！
+          </span>
+        </span>
+      </button>
+
+      <div
+        id="mainPlayerArea"
+        class="main-player-area"
+        aria-hidden="true"
+      >
+        <div class="main-player-shadow"></div>
+
+        <img
+          id="mainPlayerImage"
+          class="main-player-image"
+          src="play/playpink2.png"
+          alt=""
+          draggable="false"
+        />
+
+        <div
+          id="mainEquippedPetLayer"
+          class="main-equipped-pet-layer"
+        ></div>
+      </div>
+
+      <nav
+        class="main-side-menu"
+        aria-label="メインメニュー"
+      >
+        <button
+          id="mainSortieButton"
+          class="image-menu-button main-sortie-button"
+          type="button"
+          data-action="open-stage-select"
+        >
+          <img
+            src="mt/menusta.png"
+            alt="出撃"
+            draggable="false"
+          />
+        </button>
+
+        <button
+          id="mainShopButton"
+          class="image-menu-button"
+          type="button"
+          data-action="open-shop"
+        >
+          <img
+            src="mt/menushop.png"
+            alt="ショップ"
+            draggable="false"
+          />
+        </button>
+
+        <button
+          id="mainEquipmentButton"
+          class="image-menu-button"
+          type="button"
+          data-action="open-equipment"
+        >
+          <img
+            src="mt/menusoubi.png"
+            alt="装備"
+            draggable="false"
+          />
+        </button>
+
+        <button
+          id="mainPetButton"
+          class="image-menu-button"
+          type="button"
+          data-action="open-pet"
+        >
+          <img
+            src="mt/menupet.png"
+            alt="ペット"
+            draggable="false"
+          />
+        </button>
+
+        <button
+          id="mainEventButton"
+          class="text-menu-button main-event-button"
+          type="button"
+          data-action="open-event"
+        >
+          <span class="text-menu-button-icon" aria-hidden="true">★</span>
+          <span>EVENT</span>
+        </button>
+
+        <button
+          id="mainSettingsButton"
+          class="text-menu-button main-settings-button"
+          type="button"
+          data-action="open-settings"
+        >
+          <span class="text-menu-button-icon" aria-hidden="true">⚙</span>
+          <span>SETTING</span>
+        </button>
+      </nav>
+
+      <nav
+        class="main-bottom-menu"
+        aria-label="サブメニュー"
+      >
+        <button
+          id="mainGachaButton"
+          class="main-bottom-button"
+          type="button"
+          data-action="open-gacha"
+        >
+          <img
+            src="mt/menugacha.png"
+            alt=""
+            draggable="false"
+          />
+          <span>GACHA</span>
+        </button>
+
+        <button
+          id="mainMissionButton"
+          class="main-bottom-button"
+          type="button"
+          data-action="open-mission"
+        >
+          <img
+            src="mt/menumission.png"
+            alt=""
+            draggable="false"
+          />
+          <span>MISSION</span>
+
+          <span
+            id="missionBadge"
+            class="notification-badge"
+            hidden
+          >
+            0
+          </span>
+        </button>
+
+        <button
+          id="mainCollectionButton"
+          class="main-bottom-button"
+          type="button"
+          data-action="open-collection"
+        >
+          <img
+            src="mt/menucolle.png"
+            alt=""
+            draggable="false"
+          />
+          <span>COLLECTION</span>
+
+          <span
+            id="collectionBadge"
+            class="notification-badge"
+            hidden
+          >
+            0
+          </span>
+        </button>
+      </nav>
+    </section>
+
+    <!-- =======================================================
+         ステージ選択画面
+    ======================================================== -->
+    <section
+      id="stageSelectScreen"
+      class="screen menu-screen stage-select-screen"
+      data-screen="stage-select"
+      aria-labelledby="stageSelectTitle"
+      hidden
+    >
+      <div
+        id="stageSelectBackground"
+        class="menu-screen-background stage-select-background"
+        aria-hidden="true"
+      ></div>
+
+      <header class="screen-title-header">
+        <div>
+          <p class="screen-title-sub">SELECT AREA</p>
+          <h2 id="stageSelectTitle">ステージ選択</h2>
+        </div>
+      </header>
+
+      <div
+        id="difficultyTabs"
+        class="difficulty-tabs"
+        role="tablist"
+        aria-label="難易度選択"
+      >
+        <button
+          class="difficulty-tab is-active"
+          type="button"
+          role="tab"
+          data-difficulty="easy"
+          aria-selected="true"
+        >
+          EASY
+        </button>
+
+        <button
+          class="difficulty-tab"
+          type="button"
+          role="tab"
+          data-difficulty="hard"
+          aria-selected="false"
+        >
+          HARD
+        </button>
+
+        <button
+          class="difficulty-tab"
+          type="button"
+          role="tab"
+          data-difficulty="veryHard"
+          aria-selected="false"
+        >
+          VERY HARD
+        </button>
+
+        <button
+          class="difficulty-tab"
+          type="button"
+          role="tab"
+          data-difficulty="inferno"
+          aria-selected="false"
+        >
+          INFERNO
+        </button>
+
+        <button
+          class="difficulty-tab"
+          type="button"
+          role="tab"
+          data-difficulty="legend"
+          aria-selected="false"
+        >
+          LEGEND
+        </button>
+      </div>
+
+      <div class="stage-select-content">
+        <article
+          id="selectedAreaCard"
+          class="selected-area-card"
+        >
+          <div class="selected-area-image-wrap">
+            <img
+              id="selectedAreaImage"
+              class="selected-area-image"
+              src="sta/backsougen.png"
+              alt="草原"
+              draggable="false"
+            />
+
+            <div class="selected-area-image-overlay"></div>
+
+            <div class="selected-area-heading">
+              <p id="selectedAreaDifficulty">EASY</p>
+              <h3 id="selectedAreaName">草原</h3>
+            </div>
+          </div>
+
+          <div class="selected-area-details">
+            <div class="selected-area-progress">
+              <span>AREA PROGRESS</span>
+
+              <strong id="selectedAreaProgressText">
+                0 / 3
+              </strong>
+            </div>
+
+            <div
+              class="progress-bar"
+              aria-hidden="true"
+            >
+              <div
+                id="selectedAreaProgressFill"
+                class="progress-bar-fill"
+                style="width: 0%;"
+              ></div>
+            </div>
+
+            <p
+              id="selectedAreaDescription"
+              class="selected-area-description"
+            >
+              MOB SHOTの最初のエリア。基本操作を覚えながら進もう。
+            </p>
+          </div>
+        </article>
+
+        <div
+          id="areaList"
+          class="area-list"
+          aria-label="エリア一覧"
+        ></div>
+
+        <div
+          id="stageList"
+          class="stage-list"
+          aria-label="ステージ一覧"
+        ></div>
+      </div>
+
+      <footer class="stage-select-footer">
+        <div class="selected-stage-summary">
+          <span id="selectedStageNumber">1-1</span>
+          <strong id="selectedStageName">草原</strong>
+        </div>
+
+        <button
+          id="stageStartButton"
+          class="primary-action-button"
+          type="button"
+          data-action="start-selected-stage"
+        >
+          START
+        </button>
+      </footer>
+    </section>
+
+    <!-- =======================================================
+         装備画面
+    ======================================================== -->
+    <section
+      id="equipmentScreen"
+      class="screen menu-screen equipment-screen"
+      data-screen="equipment"
+      aria-labelledby="equipmentTitle"
+      hidden
+    >
+      <div
+        class="menu-screen-background equipment-background"
+        aria-hidden="true"
+      ></div>
+
+      <header class="screen-title-header">
+        <div>
+          <p class="screen-title-sub">EQUIPMENT</p>
+          <h2 id="equipmentTitle">装備</h2>
+        </div>
+      </header>
+
+      <div class="screen-scroll-content">
+        <section class="equipment-player-panel">
+          <div class="equipment-player-visual">
+            <img
+              id="equipmentPlayerImage"
+              src="play/playpink2.png"
+              alt="現在のプレイヤー"
+              draggable="false"
+            />
+          </div>
+
+          <div class="equipment-player-info">
+            <p class="panel-label">PLAYER</p>
+            <h3 id="equipmentPlayerName">MOB PINK</h3>
+
+            <div class="equipment-total-power">
+              <span>総合戦力</span>
+              <strong id="equipmentTotalPower">0</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel-card">
+          <header class="panel-card-header">
+            <h3>プレイヤー能力</h3>
+          </header>
+
+          <div
+            id="equipmentStatList"
+            class="stat-list"
+          ></div>
+        </section>
+
+        <section class="panel-card">
+          <header class="panel-card-header">
+            <h3>装備スキル</h3>
+          </header>
+
+          <div
+            id="equippedSkillSlots"
+            class="equipment-slot-list equipment-skill-slots"
+          ></div>
+        </section>
+
+        <section class="panel-card">
+          <header class="panel-card-header">
+            <h3>装備ペット</h3>
+          </header>
+
+          <div
+            id="equippedPetSlots"
+            class="equipment-slot-list equipment-pet-slots"
+          ></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         ペット画面
+    ======================================================== -->
+    <section
+      id="petScreen"
+      class="screen menu-screen pet-screen"
+      data-screen="pet"
+      aria-labelledby="petTitle"
+      hidden
+    >
+      <div
+        class="menu-screen-background pet-background"
+        aria-hidden="true"
+      ></div>
+
+      <header class="screen-title-header">
+        <div>
+          <p class="screen-title-sub">PET</p>
+          <h2 id="petTitle">ペット</h2>
+        </div>
+      </header>
+
+      <div class="screen-scroll-content">
+        <section class="panel-card pet-equipped-panel">
+          <header class="panel-card-header">
+            <h3>装備中</h3>
+            <span id="equippedPetCount">0 / 4</span>
+          </header>
+
+          <div
+            id="petEquipSlots"
+            class="pet-equip-slots"
+          ></div>
+        </section>
+
+        <section class="panel-card pet-detail-panel">
+          <div class="pet-detail-visual">
+            <img
+              id="petDetailImage"
+              src=""
+              alt=""
+              draggable="false"
+              hidden
+            />
+
+            <div
+              id="petDetailEmpty"
+              class="empty-state"
+            >
+              ペットを選択してください
+            </div>
+          </div>
+
+          <div
+            id="petDetailContent"
+            class="pet-detail-content"
+            hidden
+          >
+            <div class="pet-detail-heading">
+              <div>
+                <p id="petDetailRarity">R</p>
+                <h3 id="petDetailName">ペット名</h3>
+              </div>
+
+              <strong id="petDetailLevel">Lv.1</strong>
+            </div>
+
+            <p id="petDetailDescription"></p>
+
+            <div
+              id="petDetailStats"
+              class="pet-detail-stats"
+            ></div>
+
+            <div class="pet-detail-actions">
+              <button
+                id="petEquipButton"
+                class="secondary-action-button"
+                type="button"
+                data-action="toggle-pet-equip"
+              >
+                装備する
+              </button>
+
+              <button
+                id="petUpgradeButton"
+                class="primary-action-button"
+                type="button"
+                data-action="upgrade-pet"
+              >
+                強化
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel-card">
+          <header class="panel-card-header">
+            <h3>所持ペット</h3>
+
+            <select
+              id="petSortSelect"
+              class="compact-select"
+              aria-label="ペットの並び順"
+            >
+              <option value="rarity">レアリティ順</option>
+              <option value="level">レベル順</option>
+              <option value="name">名前順</option>
+            </select>
+          </header>
+
+          <div
+            id="petList"
+            class="pet-list"
+          ></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         ショップ画面
+    ======================================================== -->
+    <section
+      id="shopScreen"
+      class="screen menu-screen shop-screen"
+      data-screen="shop"
+      aria-labelledby="shopTitle"
+      hidden
+    >
+      <div
+        class="menu-screen-background shop-background"
+        aria-hidden="true"
+      ></div>
+
+      <header class="screen-title-header">
+        <div>
+          <p class="screen-title-sub">MOB SHOP</p>
+          <h2 id="shopTitle">ショップ</h2>
+        </div>
+      </header>
+
+      <div
+        id="shopTabs"
+        class="screen-tabs"
+        role="tablist"
+        aria-label="ショップカテゴリー"
+      >
+        <button
+          class="screen-tab is-active"
+          type="button"
+          role="tab"
+          data-shop-tab="upgrade"
+          aria-selected="true"
+        >
+          強化
+        </button>
+
+        <button
+          class="screen-tab"
+          type="button"
+          role="tab"
+          data-shop-tab="skill"
+          aria-selected="false"
+        >
+          スキル
+        </button>
+
+        <button
+          class="screen-tab"
+          type="button"
+          role="tab"
+          data-shop-tab="soul"
+          aria-selected="false"
+        >
+          ソウル
+        </button>
+
+        <button
+          class="screen-tab"
+          type="button"
+          role="tab"
+          data-shop-tab="tablet"
+          aria-selected="false"
+        >
+          石板
+        </button>
+
+        <button
+          class="screen-tab"
+          type="button"
+          role="tab"
+          data-shop-tab="exchange"
+          aria-selected="false"
+        >
+          交換
+        </button>
+      </div>
+
+      <div class="screen-scroll-content shop-scroll-content">
+        <section
+          id="shopUpgradePanel"
+          class="shop-tab-panel"
+          data-shop-panel="upgrade"
+        >
+          <div
+            id="shopUpgradeList"
+            class="shop-item-list"
+          ></div>
+        </section>
+
+        <section
+          id="shopSkillPanel"
+          class="shop-tab-panel"
+          data-shop-panel="skill"
+          hidden
+        >
+          <div
+            id="shopSkillList"
+            class="shop-item-list"
+          ></div>
+        </section>
+
+        <section
+          id="shopSoulPanel"
+          class="shop-tab-panel"
+          data-shop-panel="soul"
+          hidden
+        >
+          <div
+            id="shopSoulList"
+            class="shop-item-list"
+          ></div>
+        </section>
+
+        <section
+          id="shopTabletPanel"
+          class="shop-tab-panel"
+          data-shop-panel="tablet"
+          hidden
+        >
+          <div
+            id="shopTabletList"
+            class="shop-item-list"
+          ></div>
+        </section>
+
+        <section
+          id="shopExchangePanel"
+          class="shop-tab-panel"
+          data-shop-panel="exchange"
+          hidden
+        >
+          <div
+            id="shopExchangeList"
+            class="shop-item-list"
+          ></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         ガチャ画面
+    ======================================================== -->
+    <section
+      id="gachaScreen"
+      class="screen menu-screen gacha-screen"
+      data-screen="gacha"
+      aria-labelledby="gachaTitle"
+      hidden
+    >
+      <div
+        class="menu-screen-background gacha-background"
+        aria-hidden="true"
+      ></div>
+
+      <header class="screen-title-header">
+        <div>
+          <p class="screen-title-sub">GACHA</p>
+          <h2 id="gachaTitle">ガチャ</h2>
+        </div>
+      </header>
+
+      <div class="screen-scroll-content gacha-scroll-content">
+        <section class="gacha-banner-panel">
+          <div
+            id="gachaBanner"
+            class="gacha-banner"
+          >
+            <div class="gacha-banner-copy">
+              <p id="gachaBannerLabel">STANDARD GACHA</p>
+              <h3 id="gachaBannerTitle">MOB COLLECTION</h3>
+              <p id="gachaBannerDescription">
+                キャラクター、ペット、スキルを手に入れよう！
+              </p>
+            </div>
+          </div>
+
+          <div
+            id="gachaRateSummary"
+            class="gacha-rate-summary"
+          ></div>
+        </section>
+
+        <section class="gacha-action-panel">
+          <button
+            id="gachaSingleButton"
+            class="gacha-draw-button"
+            type="button"
+            data-action="draw-gacha-single"
+          >
+            <span>1回引く</span>
+            <strong>
+              <span id="gachaSingleCost">5</span>
+              DIAMOND
+            </strong>
+          </button>
+
+          <button
+            id="gachaMultiButton"
+            class="gacha-draw-button gacha-draw-button-special"
+            type="button"
+            data-action="draw-gacha-multi"
+          >
+            <span>10回引く</span>
+            <strong>
+              <span id="gachaMultiCost">50</span>
+              DIAMOND
+            </strong>
+          </button>
+
+          <button
+            id="gachaPremiumButton"
+            class="gacha-draw-button gacha-draw-button-premium"
+            type="button"
+            data-action="draw-gacha-premium"
+          >
+            <span>プレミアム</span>
+            <strong>
+              <span id="gachaPremiumCost">250</span>
+              DIAMOND
+            </strong>
+          </button>
+        </section>
+
+        <button
+          id="gachaHistoryButton"
+          class="text-link-button"
+          type="button"
+          data-action="open-gacha-history"
+        >
+          ガチャ履歴
+        </button>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         ミッション画面
+    ======================================================== -->
+    <section
+      id="missionScreen"
+      class="screen menu-screen mission-screen"
+      data-screen="mission"
+      aria-labelledby="missionTitle"
+      hidden
+    >
+      <div
+        class="menu-screen-background mission-background"
+        aria-hidden="true"
+      ></div>
+
+      <header class="screen-title-header">
+        <div>
+          <p class="screen-title-sub">MISSION</p>
+          <h2 id="missionTitle">ミッション</h2>
+        </div>
+      </header>
+
+      <div
+        id="missionTabs"
+        class="screen-tabs"
+        role="tablist"
+        aria-label="ミッションカテゴリー"
+      >
+        <button
+          class="screen-tab is-active"
+          type="button"
+          role="tab"
+          data-mission-tab="stage"
+          aria-selected="true"
+        >
+          ステージ
+        </button>
+
+        <button
+          class="screen-tab"
+          type="button"
+          role="tab"
+          data-mission-tab="battle"
+          aria-selected="false"
+        >
+          バトル
+        </button>
+
+        <button
+          class="screen-tab"
+          type="button"
+          role="tab"
+          data-mission-tab="collection"
+          aria-selected="false"
+        >
+          収集
+        </button>
+
+        <button
+          class="screen-tab"
+          type="button"
+          role="tab"
+          data-mission-tab="event"
+          aria-selected="false"
+        >
+          イベント
+        </button>
+      </div>
+
+      <div class="screen-scroll-content">
+        <button
+          id="missionClaimAllButton"
+          class="claim-all-button"
+          type="button"
+          data-action="claim-all-missions"
+        >
+          一括受取
+        </button>
+
+        <div
+          id="missionList"
+          class="mission-list"
+        ></div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         コレクション画面
+    ======================================================== -->
+    <section
+      id="collectionScreen"
+      class="screen menu-screen collection-screen"
+      data-screen="collection"
+      aria-labelledby="collectionTitle"
+      hidden
+    >
+      <div
+        class="menu-screen-background collection-background"
+        aria-hidden="true"
+      ></div>
+
+      <header class="screen-title-header">
+        <div>
+          <p class="screen-title-sub">COLLECTION</p>
+          <h2 id="collectionTitle">コレクション</h2>
+        </div>
+      </header>
+
+      <div
+        id="collectionTabs"
+        class="screen-tabs"
+        role="tablist"
+        aria-label="コレクションカテゴリー"
+      >
+        <button
+          class="screen-tab is-active"
+          type="button"
+          role="tab"
+          data-collection-tab="all"
+          aria-selected="true"
+        >
+          ALL
+        </button>
+
+        <button
+          class="screen-tab"
+          type="button"
+          role="tab"
+          data-collection-tab="enemy"
+          aria-selected="false"
+        >
+          ENEMY
+        </button>
+
+        <button
+          class="screen-tab"
+          type="button"
+          role="tab"
+          data-collection-tab="boss"
+          aria-selected="false"
+        >
+          BOSS
+        </button>
+
+        <button
+          class="screen-tab"
+          type="button"
+          role="tab"
+          data-collection-tab="pet"
+          aria-selected="false"
+        >
+          PET
+        </button>
+
+        <button
+          class="screen-tab"
+          type="button"
+          role="tab"
+          data-collection-tab="event"
+          aria-selected="false"
+        >
+          EVENT
+        </button>
+      </div>
+
+      <div class="collection-summary">
+        <span>獲得数</span>
+
+        <strong>
+          <span id="collectionOwnedCount">0</span>
+          /
+          <span id="collectionTotalCount">0</span>
+        </strong>
+      </div>
+
+      <div class="screen-scroll-content collection-scroll-content">
+        <div
+          id="collectionGrid"
+          class="collection-grid"
+        ></div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         イベント画面
+    ======================================================== -->
+    <section
+      id="eventScreen"
+      class="screen menu-screen event-screen"
+      data-screen="event"
+      aria-labelledby="eventTitle"
+      hidden
+    >
+      <div
+        class="menu-screen-background event-background"
+        aria-hidden="true"
+      ></div>
+
+      <header class="screen-title-header">
+        <div>
+          <p class="screen-title-sub">SPECIAL EVENT</p>
+          <h2 id="eventTitle">イベント</h2>
+        </div>
+      </header>
+
+      <div class="screen-scroll-content">
+        <section
+          id="eventFeaturedCard"
+          class="event-featured-card"
+        >
+          <div
+            id="eventFeaturedVisual"
+            class="event-featured-visual"
+          >
+            <div class="event-featured-copy">
+              <p id="eventFeaturedLabel">EVENT</p>
+              <h3 id="eventFeaturedName">イベント名</h3>
+              <p id="eventFeaturedPeriod">開催期間</p>
+            </div>
+          </div>
+
+          <p
+            id="eventFeaturedDescription"
+            class="event-featured-description"
+          >
+            イベントの説明がここに表示されます。
+          </p>
+        </section>
+
+        <div
+          id="eventList"
+          class="event-list"
+        ></div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         イベントステージ選択画面
+    ======================================================== -->
+    <section
+      id="eventStageScreen"
+      class="screen menu-screen event-stage-screen"
+      data-screen="event-stage"
+      aria-labelledby="eventStageTitle"
+      hidden
+    >
+      <div
+        id="eventStageBackground"
+        class="menu-screen-background event-stage-background"
+        aria-hidden="true"
+      ></div>
+
+      <header class="screen-title-header">
+        <div>
+          <p class="screen-title-sub">EVENT STAGE</p>
+          <h2 id="eventStageTitle">イベントステージ</h2>
+        </div>
+      </header>
+
+      <div class="screen-scroll-content">
+        <section class="event-stage-summary">
+          <div class="event-stage-summary-heading">
+            <div>
+              <p id="eventStageDifficulty">EASY</p>
+              <h3 id="eventStageName">イベント名</h3>
+            </div>
+
+            <strong id="eventStageEnergy">
+              0 / 0
+            </strong>
+          </div>
+
+          <p id="eventStageDescription"></p>
+        </section>
+
+        <div
+          id="eventDifficultyList"
+          class="event-difficulty-list"
+        ></div>
+
+        <div
+          id="eventStageList"
+          class="stage-list event-stage-list"
+        ></div>
+      </div>
+
+      <footer class="stage-select-footer">
+        <div class="selected-stage-summary">
+          <span id="selectedEventStageNumber">EVENT 1</span>
+          <strong id="selectedEventStageName">イベントステージ</strong>
+        </div>
+
+        <button
+          id="eventStageStartButton"
+          class="primary-action-button"
+          type="button"
+          data-action="start-event-stage"
+        >
+          START
+        </button>
+      </footer>
+    </section>
+
+    <!-- =======================================================
+         設定画面
+    ======================================================== -->
+    <section
+      id="settingsScreen"
+      class="screen menu-screen settings-screen"
+      data-screen="settings"
+      aria-labelledby="settingsTitle"
+      hidden
+    >
+      <div
+        class="menu-screen-background settings-background"
+        aria-hidden="true"
+      ></div>
+
+      <header class="screen-title-header">
+        <div>
+          <p class="screen-title-sub">SETTING</p>
+          <h2 id="settingsTitle">設定</h2>
+        </div>
+      </header>
+
+      <div class="screen-scroll-content">
+        <section class="settings-group">
+          <h3>サウンド</h3>
+
+          <label class="settings-row">
+            <span>
+              <strong>BGM</strong>
+              <small>音楽の音量</small>
+            </span>
+
+            <input
+              id="bgmVolumeInput"
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value="70"
+            />
+          </label>
+
+          <label class="settings-row">
+            <span>
+              <strong>効果音</strong>
+              <small>攻撃や演出の音量</small>
+            </span>
+
+            <input
+              id="seVolumeInput"
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value="80"
+            />
+          </label>
+        </section>
+
+        <section class="settings-group">
+          <h3>ゲーム</h3>
+
+          <label class="settings-row">
+            <span>
+              <strong>画面振動</strong>
+              <small>ダメージ時の振動演出</small>
+            </span>
+
+            <input
+              id="screenShakeInput"
+              type="checkbox"
+              checked
+            />
+          </label>
+
+          <label class="settings-row">
+            <span>
+              <strong>ダメージ表示</strong>
+              <small>敵へのダメージ数値を表示</small>
+            </span>
+
+            <input
+              id="damageNumberInput"
+              type="checkbox"
+              checked
+            />
+          </label>
+
+          <label class="settings-row">
+            <span>
+              <strong>低負荷モード</strong>
+              <small>エフェクト量を抑えます</small>
+            </span>
+
+            <input
+              id="lowPerformanceModeInput"
+              type="checkbox"
+            />
+          </label>
+        </section>
+
+        <section class="settings-group">
+          <h3>セーブデータ</h3>
+
+          <button
+            id="manualSaveButton"
+            class="settings-action-button"
+            type="button"
+            data-action="manual-save"
+          >
+            セーブする
+          </button>
+
+          <button
+            id="exportSaveButton"
+            class="settings-action-button"
+            type="button"
+            data-action="export-save"
+          >
+            セーブデータを書き出す
+          </button>
+
+          <button
+            id="importSaveButton"
+            class="settings-action-button"
+            type="button"
+            data-action="import-save"
+          >
+            セーブデータを読み込む
+          </button>
+
+          <input
+            id="importSaveFileInput"
+            type="file"
+            accept=".json,application/json"
+            hidden
+          />
+        </section>
+
+        <section class="settings-group settings-danger-group">
+          <h3>管理</h3>
+
+          <button
+            id="adminModeButton"
+            class="settings-action-button"
+            type="button"
+            data-action="open-admin"
+          >
+            管理者として実行
+          </button>
+
+          <button
+            id="resetSaveButton"
+            class="settings-action-button danger-button"
+            type="button"
+            data-action="reset-save"
+          >
+            セーブデータ削除
+          </button>
+        </section>
+
+        <p
+          id="gameVersionText"
+          class="game-version-text"
+        >
+          MOB SHOT REMAKE
+        </p>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         戦闘画面
+    ======================================================== -->
+    <section
+      id="battleScreen"
+      class="screen battle-screen"
+      data-screen="battle"
+      aria-labelledby="battleScreenTitle"
+      hidden
+    >
+      <h2
+        id="battleScreenTitle"
+        class="visually-hidden"
+      >
+        MOB SHOT バトル
+      </h2>
+
+      <div
+        id="battleBackground"
+        class="battle-background"
+        aria-hidden="true"
+      ></div>
+
+      <canvas
+        id="battleCanvas"
+        class="battle-canvas"
+        aria-label="ゲームプレイ画面"
+      >
+        お使いのブラウザはCanvasに対応していません。
+      </canvas>
+
+      <div
+        id="battleHud"
+        class="battle-hud"
+      >
+        <div class="battle-hud-top">
+          <div class="battle-hud-item battle-stage-item">
+            <img
+              src="mt/stagestage.png"
+              alt=""
+              draggable="false"
+            />
+
+            <div>
+              <span>STAGE</span>
+              <strong id="battleStageValue">1-1</strong>
+            </div>
+          </div>
+
+          <div class="battle-hud-item battle-score-item">
+            <img
+              src="mt/stagescore.png"
+              alt=""
+              draggable="false"
+            />
+
+            <div>
+              <span>SCORE</span>
+              <strong id="battleScoreValue">0</strong>
+            </div>
+          </div>
+
+          <div class="battle-hud-item battle-coin-item">
+            <img
+              src="mt/stagecoin.png"
+              alt=""
+              draggable="false"
+            />
+
+            <div>
+              <span>COIN</span>
+              <strong id="battleCoinValue">0</strong>
+            </div>
+          </div>
+
+          <div class="battle-hud-item battle-life-item">
+            <img
+              src="mt/stagelife.png"
+              alt=""
+              draggable="false"
+            />
+
+            <div>
+              <span>LIFE</span>
+              <strong id="battleLifeValue">50 / 50</strong>
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="battleLifeBar"
+          class="battle-life-bar"
+          aria-label="プレイヤーライフ"
+        >
+          <div
+            id="battleLifeBarFill"
+            class="battle-life-bar-fill"
+            style="width: 100%;"
+          ></div>
+        </div>
+
+        <div
+          id="battleBossHud"
+          class="battle-boss-hud"
+          hidden
+        >
+          <div class="battle-boss-heading">
+            <strong id="battleBossName">BOSS</strong>
+            <span id="battleBossHpText">0 / 0</span>
+          </div>
+
+          <div class="battle-boss-hp-bar">
+            <div
+              id="battleBossHpFill"
+              class="battle-boss-hp-fill"
+              style="width: 100%;"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <button
+        id="battlePauseButton"
+        class="battle-pause-button"
+        type="button"
+        data-action="pause-battle"
+        aria-label="一時停止"
+      >
+        II
+      </button>
+
+      <div
+        id="battleSkillBar"
+        class="battle-skill-bar"
+        aria-label="スキル"
+      >
+        <button
+          id="battleSkillButton1"
+          class="battle-skill-button"
+          type="button"
+          data-skill-slot="0"
+          aria-label="スキル1"
+        >
+          <img
+            class="battle-skill-icon"
+            src=""
+            alt=""
+            hidden
+          />
+
+          <span class="battle-skill-label">SKILL 1</span>
+          <span class="battle-skill-cooldown"></span>
+        </button>
+
+        <button
+          id="battleSkillButton2"
+          class="battle-skill-button"
+          type="button"
+          data-skill-slot="1"
+          aria-label="スキル2"
+        >
+          <img
+            class="battle-skill-icon"
+            src=""
+            alt=""
+            hidden
+          />
+
+          <span class="battle-skill-label">SKILL 2</span>
+          <span class="battle-skill-cooldown"></span>
+        </button>
+
+        <button
+          id="battleSkillButton3"
+          class="battle-skill-button"
+          type="button"
+          data-skill-slot="2"
+          aria-label="スキル3"
+        >
+          <img
+            class="battle-skill-icon"
+            src=""
+            alt=""
+            hidden
+          />
+
+          <span class="battle-skill-label">SKILL 3</span>
+          <span class="battle-skill-cooldown"></span>
+        </button>
+      </div>
+
+      <button
+        id="battleDashButton"
+        class="battle-dash-button"
+        type="button"
+        data-action="battle-dash"
+        aria-label="ダッシュ"
+      >
+        <span>DASH</span>
+        <span
+          id="battleDashCooldown"
+          class="battle-dash-cooldown"
+        ></span>
+      </button>
+
+      <div
+        id="battleAnnouncement"
+        class="battle-announcement"
+        aria-live="assertive"
+        hidden
+      >
+        <p id="battleAnnouncementSub"></p>
+        <strong id="battleAnnouncementTitle"></strong>
+      </div>
+
+      <div
+        id="battleWarning"
+        class="battle-warning"
+        aria-live="assertive"
+        hidden
+      >
+        WARNING
+      </div>
+
+      <div
+        id="battlePauseOverlay"
+        class="battle-overlay battle-pause-overlay"
+        hidden
+      >
+        <div class="battle-overlay-card">
+          <p>PAUSE</p>
+          <h3>一時停止</h3>
+
+          <button
+            id="battleResumeButton"
+            class="primary-action-button"
+            type="button"
+            data-action="resume-battle"
+          >
+            再開
+          </button>
+
+          <button
+            id="battleRetryButton"
+            class="secondary-action-button"
+            type="button"
+            data-action="retry-battle"
+          >
+            最初から
+          </button>
+
+          <button
+            id="battleQuitButton"
+            class="danger-action-button"
+            type="button"
+            data-action="quit-battle"
+          >
+            ステージ選択へ
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         リザルト画面
+    ======================================================== -->
+    <section
+      id="resultScreen"
+      class="screen result-screen"
+      data-screen="result"
+      aria-labelledby="resultTitle"
+      hidden
+    >
+      <div
+        id="resultBackground"
+        class="result-background"
+        aria-hidden="true"
+      ></div>
+
+      <div class="result-content">
+        <p
+          id="resultLabel"
+          class="result-label"
+        >
+          STAGE CLEAR
+        </p>
+
+        <h2 id="resultTitle">RESULT</h2>
+
+        <div
+          id="resultRank"
+          class="result-rank"
+        >
+          S
+        </div>
+
+        <div class="result-score-panel">
+          <div>
+            <span>SCORE</span>
+            <strong id="resultScoreValue">0</strong>
+          </div>
+
+          <div>
+            <span>COIN</span>
+            <strong id="resultCoinValue">0</strong>
+          </div>
+
+          <div>
+            <span>TIME</span>
+            <strong id="resultTimeValue">00:00</strong>
+          </div>
+        </div>
+
+        <section
+          id="resultRewardPanel"
+          class="result-reward-panel"
+        >
+          <h3>REWARD</h3>
+
+          <div
+            id="resultRewardList"
+            class="result-reward-list"
+          ></div>
+        </section>
+
+        <section
+          id="resultMissionPanel"
+          class="result-mission-panel"
+          hidden
+        >
+          <h3>MISSION</h3>
+
+          <div
+            id="resultMissionList"
+            class="result-mission-list"
+          ></div>
+        </section>
+
+        <div class="result-actions">
+          <button
+            id="resultRetryButton"
+            class="secondary-action-button"
+            type="button"
+            data-action="retry-result-stage"
+          >
+            RETRY
+          </button>
+
+          <button
+            id="resultNextButton"
+            class="primary-action-button"
+            type="button"
+            data-action="next-stage"
+          >
+            NEXT
+          </button>
+
+          <button
+            id="resultHomeButton"
+            class="secondary-action-button"
+            type="button"
+            data-action="return-main"
+          >
+            HOME
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         ガチャ演出画面
+    ======================================================== -->
+    <section
+      id="gachaResultScreen"
+      class="screen gacha-result-screen"
+      data-screen="gacha-result"
+      aria-labelledby="gachaResultTitle"
+      hidden
+    >
+      <div
+        id="gachaAnimationLayer"
+        class="gacha-animation-layer"
+        aria-hidden="true"
+      ></div>
+
+      <div class="gacha-result-content">
+        <p class="screen-title-sub">GACHA RESULT</p>
+        <h2 id="gachaResultTitle">獲得結果</h2>
+
+        <div
+          id="gachaResultList"
+          class="gacha-result-list"
+        ></div>
+
+        <button
+          id="gachaResultCloseButton"
+          class="primary-action-button"
+          type="button"
+          data-action="close-gacha-result"
+        >
+          OK
+        </button>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         共通モーダル
+    ======================================================== -->
+    <div
+      id="modalLayer"
+      class="modal-layer"
+      hidden
+    >
+      <div
+        id="modalBackdrop"
+        class="modal-backdrop"
+        data-action="close-modal"
+      ></div>
+
+      <section
+        id="commonModal"
+        class="common-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="commonModalTitle"
+      >
+        <button
+          id="commonModalCloseButton"
+          class="modal-close-button"
+          type="button"
+          data-action="close-modal"
+          aria-label="閉じる"
+        >
+          ×
+        </button>
+
+        <p
+          id="commonModalLabel"
+          class="modal-label"
+        ></p>
+
+        <h2 id="commonModalTitle"></h2>
+
+        <div
+          id="commonModalBody"
+          class="common-modal-body"
+        ></div>
+
+        <div
+          id="commonModalActions"
+          class="common-modal-actions"
+        ></div>
+      </section>
+    </div>
+
+    <!-- =======================================================
+         確認ダイアログ
+    ======================================================== -->
+    <div
+      id="confirmDialogLayer"
+      class="modal-layer"
+      hidden
+    >
+      <div class="modal-backdrop"></div>
+
+      <section
+        id="confirmDialog"
+        class="common-modal confirm-dialog"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirmDialogTitle"
+        aria-describedby="confirmDialogMessage"
+      >
+        <p class="modal-label">CONFIRM</p>
+
+        <h2 id="confirmDialogTitle">
+          確認
+        </h2>
+
+        <p id="confirmDialogMessage"></p>
+
+        <div class="common-modal-actions">
+          <button
+            id="confirmDialogCancelButton"
+            class="secondary-action-button"
+            type="button"
+          >
+            キャンセル
+          </button>
+
+          <button
+            id="confirmDialogAcceptButton"
+            class="primary-action-button"
+            type="button"
+          >
+            OK
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- =======================================================
+         管理者パスワード
+    ======================================================== -->
+    <div
+      id="adminDialogLayer"
+      class="modal-layer"
+      hidden
+    >
+      <div
+        class="modal-backdrop"
+        data-action="close-admin"
+      ></div>
+
+      <section
+        class="common-modal admin-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="adminDialogTitle"
+      >
+        <button
+          class="modal-close-button"
+          type="button"
+          data-action="close-admin"
+          aria-label="閉じる"
+        >
+          ×
+        </button>
+
+        <p class="modal-label">ADMIN</p>
+        <h2 id="adminDialogTitle">管理者として実行</h2>
+
+        <label class="admin-password-label">
+          <span>パスワード</span>
+
+          <input
+            id="adminPasswordInput"
+            type="password"
+            inputmode="numeric"
+            autocomplete="off"
+            maxlength="12"
+          />
+        </label>
+
+        <p
+          id="adminPasswordError"
+          class="form-error-message"
+          hidden
+        >
+          パスワードが違います。
+        </p>
+
+        <button
+          id="adminLoginButton"
+          class="primary-action-button"
+          type="button"
+          data-action="admin-login"
+        >
+          実行
+        </button>
+      </section>
+    </div>
+
+    <!-- =======================================================
+         管理者画面
+    ======================================================== -->
+    <section
+      id="adminScreen"
+      class="screen menu-screen admin-screen"
+      data-screen="admin"
+      aria-labelledby="adminTitle"
+      hidden
+    >
+      <div
+        class="menu-screen-background admin-background"
+        aria-hidden="true"
+      ></div>
+
+      <header class="screen-title-header">
+        <div>
+          <p class="screen-title-sub">ADMIN MODE</p>
+          <h2 id="adminTitle">管理者メニュー</h2>
+        </div>
+      </header>
+
+      <div class="screen-scroll-content">
+        <section class="settings-group">
+          <h3>通貨</h3>
+
+          <div class="admin-input-grid">
+            <label>
+              <span>コイン</span>
+              <input
+                id="adminCoinInput"
+                type="number"
+                min="0"
+                step="1"
+              />
+            </label>
+
+            <label>
+              <span>ダイヤ</span>
+              <input
+                id="adminDiamondInput"
+                type="number"
+                min="0"
+                step="1"
+              />
+            </label>
+
+            <label>
+              <span>ルビー</span>
+              <input
+                id="adminRubyInput"
+                type="number"
+                min="0"
+                step="1"
+              />
+            </label>
+
+            <label>
+              <span>ランク</span>
+              <input
+                id="adminRankInput"
+                type="number"
+                min="1"
+                step="1"
+              />
+            </label>
+          </div>
+
+          <button
+            id="adminApplyResourceButton"
+            class="primary-action-button"
+            type="button"
+            data-action="admin-apply-resources"
+          >
+            反映
+          </button>
+        </section>
+
+        <section class="settings-group">
+          <h3>進行</h3>
+
+          <button
+            class="settings-action-button"
+            type="button"
+            data-action="admin-unlock-all-stages"
+          >
+            全ステージ解放
+          </button>
+
+          <button
+            class="settings-action-button"
+            type="button"
+            data-action="admin-unlock-all-collection"
+          >
+            コレクション全解放
+          </button>
+
+          <button
+            class="settings-action-button"
+            type="button"
+            data-action="admin-own-all-pets"
+          >
+            全ペット獲得
+          </button>
+
+          <button
+            class="settings-action-button"
+            type="button"
+            data-action="admin-own-all-skills"
+          >
+            全スキル獲得
+          </button>
+        </section>
+
+        <section class="settings-group settings-danger-group">
+          <h3>デバッグ</h3>
+
+          <button
+            class="settings-action-button danger-button"
+            type="button"
+            data-action="admin-reset-progress"
+          >
+            進行状況のみ初期化
+          </button>
+
+          <button
+            class="settings-action-button danger-button"
+            type="button"
+            data-action="admin-reset-all"
+          >
+            全データ初期化
+          </button>
+        </section>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         トースト通知
+    ======================================================== -->
+    <div
+      id="toastContainer"
+      class="toast-container"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+
+    <!-- =======================================================
+         全画面演出レイヤー
+    ======================================================== -->
+    <div
+      id="globalEffectLayer"
+      class="global-effect-layer"
+      aria-hidden="true"
+    ></div>
+  </main>
+
+  <!-- =========================================================
+       テンプレート
+  ========================================================== -->
+  <template id="toastTemplate">
+    <div class="toast">
+      <span class="toast-icon" aria-hidden="true"></span>
+
+      <div class="toast-content">
+        <strong class="toast-title"></strong>
+        <p class="toast-message"></p>
+      </div>
+    </div>
+  </template>
+
+  <template id="stageButtonTemplate">
+    <button
+      class="stage-button"
+      type="button"
+    >
+      <span class="stage-button-number"></span>
+      <strong class="stage-button-name"></strong>
+      <span class="stage-button-status"></span>
+      <span class="stage-button-stars"></span>
+    </button>
+  </template>
+
+  <template id="areaButtonTemplate">
+    <button
+      class="area-button"
+      type="button"
+    >
+      <img
+        class="area-button-image"
+        src=""
+        alt=""
+        draggable="false"
+      />
+
+      <span class="area-button-overlay"></span>
+
+      <span class="area-button-content">
+        <strong class="area-button-name"></strong>
+        <small class="area-button-progress"></small>
+      </span>
+
+      <span class="area-button-lock" hidden>
+        LOCK
+      </span>
+    </button>
+  </template>
+
+  <template id="shopUpgradeItemTemplate">
+    <article class="shop-upgrade-item">
+      <div class="shop-upgrade-icon"></div>
+
+      <div class="shop-upgrade-info">
+        <p class="shop-upgrade-label"></p>
+        <h3 class="shop-upgrade-name"></h3>
+        <p class="shop-upgrade-effect"></p>
+
+        <div class="shop-upgrade-level">
+          <span>Lv.</span>
+          <strong class="shop-upgrade-level-value"></strong>
+        </div>
+      </div>
+
+      <button
+        class="shop-upgrade-button"
+        type="button"
+      >
+        <span class="shop-upgrade-cost-type"></span>
+        <strong class="shop-upgrade-cost-value"></strong>
+      </button>
+    </article>
+  </template>
+
+  <template id="petCardTemplate">
+    <button
+      class="pet-card"
+      type="button"
+    >
+      <span class="pet-card-rarity"></span>
+
+      <span class="pet-card-image-wrap">
+        <img
+          class="pet-card-image"
+          src=""
+          alt=""
+          draggable="false"
+        />
+      </span>
+
+      <strong class="pet-card-name"></strong>
+      <span class="pet-card-level"></span>
+      <span class="pet-card-equipped" hidden>装備中</span>
+    </button>
+  </template>
+
+  <template id="missionItemTemplate">
+    <article class="mission-item">
+      <div class="mission-item-content">
+        <p class="mission-item-category"></p>
+        <h3 class="mission-item-title"></h3>
+        <p class="mission-item-description"></p>
+
+        <div class="mission-progress-row">
+          <div class="mission-progress-bar">
+            <div class="mission-progress-fill"></div>
+          </div>
+
+          <strong class="mission-progress-text"></strong>
+        </div>
+
+        <div class="mission-reward"></div>
+      </div>
+
+      <button
+        class="mission-claim-button"
+        type="button"
+      >
+        受取
+      </button>
+    </article>
+  </template>
+
+  <template id="collectionCardTemplate">
+    <button
+      class="collection-card"
+      type="button"
+    >
+      <span class="collection-card-number"></span>
+      <span class="collection-card-rarity"></span>
+
+      <span class="collection-card-image-wrap">
+        <img
+          class="collection-card-image"
+          src=""
+          alt=""
+          draggable="false"
+        />
+      </span>
+
+      <strong class="collection-card-name"></strong>
+      <span class="collection-card-lock">?</span>
+      <span class="collection-card-new" hidden>NEW</span>
+    </button>
+  </template>
+
+  <template id="eventCardTemplate">
+    <article class="event-card">
+      <button
+        class="event-card-main"
+        type="button"
+      >
+        <img
+          class="event-card-image"
+          src=""
+          alt=""
+          draggable="false"
+        />
+
+        <span class="event-card-overlay"></span>
+
+        <span class="event-card-content">
+          <small class="event-card-label"></small>
+          <strong class="event-card-name"></strong>
+          <span class="event-card-period"></span>
+        </span>
+
+        <span class="event-card-status"></span>
+      </button>
+    </article>
+  </template>
+
+  <template id="rewardItemTemplate">
+    <div class="reward-item">
+      <img
+        class="reward-item-image"
+        src=""
+        alt=""
+        draggable="false"
+      />
+
+      <div class="reward-item-info">
+        <strong class="reward-item-name"></strong>
+        <span class="reward-item-amount"></span>
+      </div>
+    </div>
+  </template>
+
+  <template id="gachaResultItemTemplate">
+    <article class="gacha-result-item">
+      <span class="gacha-result-rarity"></span>
+
+      <img
+        class="gacha-result-image"
+        src=""
+        alt=""
+        draggable="false"
+      />
+
+      <strong class="gacha-result-name"></strong>
+      <span class="gacha-result-new" hidden>NEW</span>
+    </article>
+  </template>
+
+  <!-- =========================================================
+       JavaScript
+       読み込み順は固定
+  ========================================================== -->
+  <script src="js/data.js" defer></script>
+  <script src="js/save.js" defer></script>
+  <script src="js/enemy.js" defer></script>
+  <script src="js/boss.js" defer></script>
+  <script src="js/player.js" defer></script>
+  <script src="js/pet.js" defer></script>
+  <script src="js/skill.js" defer></script>
+  <script src="js/stage.js" defer></script>
+  <script src="js/battle.js" defer></script>
+  <script src="js/event.js" defer></script>
+  <script src="js/shop.js" defer></script>
+  <script src="js/collection.js" defer></script>
+  <script src="js/main.js" defer></script>
+</body>
+</html>
